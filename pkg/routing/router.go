@@ -2,7 +2,7 @@ package routing
 
 import (
 	"fmt"
-	"github.com/3scale-labs/kamwiel/controllers/ping"
+	"github.com/3scale-labs/kamwiel/pkg/controllers/ping"
 	"github.com/gin-gonic/gin"
 )
 
