@@ -13,4 +13,7 @@ WORKDIR /
 COPY --from=builder /workspace/kamwiel .
 USER nonroot:nonroot
 
+ENV PORT=3000 \
+    GIN_MODE=release
+
 ENTRYPOINT ["/kamwiel"]
