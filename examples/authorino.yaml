@@ -1,0 +1,16 @@
+apiVersion: config.authorino.3scale.net/v1beta1
+kind: Service
+metadata:
+  name: kamwiel-api-protection
+spec:
+  hosts:
+    - kamwiel-authorino.127.0.0.1.nip.io:8000
+  identity:
+    - name: friends
+      apiKey:
+        labelSelectors:
+          authorino.3scale.net/managed-by: authorino
+          custom-label: friends
+      credentials:
+        in: custom_header
+        keySelector: X-API-KEY

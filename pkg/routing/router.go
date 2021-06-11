@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/3scale-labs/kamwiel/pkg/controllers/ping"
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 var router = gin.Default()
@@ -14,6 +15,11 @@ func urlMappings() {
 
 func Start() {
 	urlMappings()
-	fmt.Println("Kamwiel starting...")
-	router.Run(":8080")
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		panic("ENV PORT is not present")
+	} else {
+		fmt.Println("Kamwiel listening on port "+port)
+		router.Run(":"+port)
+	}
 }
