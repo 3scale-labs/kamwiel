@@ -3,6 +3,7 @@ VERSION ?= 0.0.1
 
 # Image URL to use all building/pushing image targets
 IMG ?= kamwiel:latest
+KAMWIEL_NAMESPACE ?= kamwiel
 
 #Use bash as shell
 SHELL = /bin/bash
@@ -68,18 +69,29 @@ KIND_CLUSTER_NAME ?= kamwiel-cluster
 local-cluster-up: kind local-cluster-down
 	kind create cluster --name $(KIND_CLUSTER_NAME) --config ./utils/kind-cluster.yaml
 
-# Deletes the local Kubernetes cluster started using Kind
-.PHONY: local-cluster-down
-local-cluster-down: kind
-	kind delete cluster --name $(KIND_CLUSTER_NAME)
 
 # Pushes a local container image of Kamwiel to the registry of the Kind-started local Kubernetes cluster
 .PHONY: local-push
 local-push: kind
 	kind load docker-image $(IMG) --name $(KIND_CLUSTER_NAME)
 
+# Builds the image, pushes to the local cluster and deploys Kamwiel.
+# Sets the imagePullPolicy to 'IfNotPresent' so it doesn't try to pull the image again (just pushed into the server registry)
+.PHONY: deploy
+local-deploy: docker-build local-push deploy
+	kubectl -n $(KAMWIEL_NAMESPACE) patch deployment kamwiel -p '{"spec": {"template": {"spec":{"containers":[{"name": "kamwiel", "imagePullPolicy":"IfNotPresent"}]}}}}'
+
+# Rebuild and push the docker image and redeploy Kamwiel to kind
+.PHONY: local-rollout
+local-rollout: docker-build local-push
+	kubectl -n $(KAMWIEL_NAMESPACE) rollout restart deployment.apps/kamwiel
+
 # Set up a test/dev local Kubernetes server loaded up with a freshly built Kamwiel image protected with Authorino
 .PHONY: local-setup
 local-setup: vendor kind local-cluster-up docker-build local-push
 	utils/local-setup.sh
 
+# Deletes the local Kubernetes cluster started using Kind
+.PHONY: local-cleanup
+local-cleanup: kind
+	kind delete cluster --name $(KIND_CLUSTER_NAME)
