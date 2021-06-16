@@ -40,6 +40,13 @@ echo "**************************************************************************
 echo
 
 echo "***************************************************************************"
+echo "Applying Kuadrant's CRD and sample data"
+kubectl apply -f examples/kuadrant/networking.kuadrant.io_apis.yaml
+kubectl -n "${NAMESPACE}" apply -f examples/kuadrant/api_samples.yaml
+echo "***************************************************************************"
+echo
+
+echo "***************************************************************************"
 echo "Applying authorino config"
 kubectl -n "${NAMESPACE}" apply -f examples/authorino.yaml
 echo "***************************************************************************"
