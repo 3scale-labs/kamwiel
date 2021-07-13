@@ -95,6 +95,13 @@ KIND_CLUSTER_NAME ?= kamwiel-cluster
 namespace:
 	kubectl create namespace $(CLUSTER_NAMESPACE)
 
+
+## cert-manager:		 	Install CertManager to the Kubernetes cluster
+.PHONY: cert-manager
+cert-manager:
+	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
+	kubectl -n cert-manager wait --timeout=300s --for=condition=Available deployments --all
+
 ## generate-kuadrant-manifest:	Generates Kuadrant CRDs.
 KUADRANT_VERSION=v0.0.1-pre2
 .PHONY: generate-kuadrant-manifest
@@ -106,7 +113,7 @@ generate-kuadrant-manifest: kustomize
 	-rm -rf $(TMP)
 
 ## generate-authorino-manifest:	Generates Authorino CRDs, RBAC, etc.
-AUTHORINO_VERSION=master
+AUTHORINO_VERSION=v0.2.1-pre
 .PHONY: generate-authorino-manifest
 generate-authorino-manifest: kustomize
 	$(eval TMP := $(shell mktemp -d))
@@ -181,7 +188,7 @@ local-rollout: docker-build local-push
 
 ## local-setup:			Set up a test/dev local Kubernetes server loaded up with a freshly built Kamwiel image plus dependencies
 .PHONY: local-setup
-local-setup: local-cluster-up generate-kuadrant-manifest namespace local-deploy deploy-envoy deploy-authorino example-config create-apikey
+local-setup: local-cluster-up namespace local-deploy cert-manager deploy-envoy deploy-authorino example-config create-apikey
 	kubectl -n $(CLUSTER_NAMESPACE) wait --timeout=500s --for=condition=Available deployments --all
 	@{ \
 	echo "Now you can export the envoy service by doing:"; \
