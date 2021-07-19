@@ -44,6 +44,23 @@ spec:
       protocol: TCP
       targetPort: 3000
 ---
+apiVersion: networking.kuadrant.io/v1beta1
+kind: API
+metadata:
+  name: dogs.production
+  namespace: kamwiel
+spec:
+  destination:
+    schema: http
+    serviceReference:
+      name: dogs-api
+      namespace: kamwiel
+      port: 80
+  mappings:
+    HTTPPathMatch:
+      type: Prefix
+      value: /
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -105,3 +122,29 @@ data:
       /toys:
         get:
           operationId: "getToys"
+---
+apiVersion: networking.kuadrant.io/v1beta1
+kind: API
+metadata:
+  generation: 1
+  name: cats.production
+  namespace: kamwiel
+spec:
+  destination:
+    schema: http
+    serviceReference:
+      name: cats-api
+      namespace: kamwiel
+      port: 80
+  mappings:
+    OAS: |
+      openapi: "3.0.0"
+      info:
+        title: "toy API"
+      version: "1.0.0"
+      servers:
+        - url: http://toys/
+      paths:
+        /toys:
+          get:
+            operationId: "getToys"
