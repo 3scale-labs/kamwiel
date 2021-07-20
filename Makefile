@@ -6,9 +6,15 @@ PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 CLUSTER_NAMESPACE ?= kamwiel
 KAMWIEL_IMG ?= kamwiel:latest
 
-AUTHORINO_IMAGE ?= quay.io/3scale/authorino:latest
+KUADRANT_VERSION=v0.0.1-pre3
+
+AUTHORINO_VERSION=v0.2.1-pre
+AUTHORINO_IMAGE ?= quay.io/3scale/authorino:v0.2.1-pre
 AUTHORINO_DEPLOYMENT ?= namespaced
 AUTHORINO_REPLICAS ?= 1
+
+API_KEY_NAME ?= kamwiel-apikey-1
+API_KEY ?= $(eval API_KEY := $(shell openssl rand -hex 32))$(API_KEY)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -103,7 +109,6 @@ cert-manager:
 	kubectl -n cert-manager wait --timeout=300s --for=condition=Available deployments --all
 
 ## generate-kuadrant-manifest:	Generates Kuadrant CRDs.
-KUADRANT_VERSION=v0.0.1-pre3
 .PHONY: generate-kuadrant-manifest
 generate-kuadrant-manifest: kustomize
 	$(eval TMP := $(shell mktemp -d))
@@ -112,7 +117,6 @@ generate-kuadrant-manifest: kustomize
 	-rm -rf $(TMP)
 
 ## generate-authorino-manifest:	Generates Authorino CRDs, RBAC, etc.
-AUTHORINO_VERSION=v0.2.1-pre
 .PHONY: generate-authorino-manifest
 generate-authorino-manifest: kustomize
 	$(eval TMP := $(shell mktemp -d))
@@ -143,8 +147,6 @@ deploy-kamwiel:
 	kubectl -n $(CLUSTER_NAMESPACE) apply -f examples/kamwiel-deployment.yaml
 
 ## create-apikey:			Creates a new api key in the cluster, API_KEY_NAME env specifies the identifier of the key
-API_KEY_NAME ?= kamwiel-apikey-1
-API_KEY ?= $(eval API_KEY := $(shell openssl rand -hex 32))$(API_KEY)
 .PHONY: create-apikey
 create-apikey:
 	@{ \
