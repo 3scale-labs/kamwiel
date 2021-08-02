@@ -3,6 +3,8 @@ SHELL = /bin/bash
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 
+KIND_CLUSTER_NAME ?= kamwiel-cluster
+
 CLUSTER_NAMESPACE ?= kamwiel
 KAMWIEL_IMG ?= kamwiel:latest
 
@@ -64,37 +66,32 @@ docker-build: vendor
 docker-push:
 	docker push ${KAMWIEL_IMG}
 
-kustomize:
-ifeq (, $(shell which kustomize))
-	@{ \
-	set -e ;\
-	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
-	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
-	}
-KUSTOMIZE=$(GOBIN)/kustomize
-else
-KUSTOMIZE=$(shell which kustomize)
-endif
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
 
-kind:
-ifeq (, $(shell which kind))
-	@{ \
-	set -e ;\
-	KIND_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KIND_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	GO111MODULE="on" go get sigs.k8s.io/kind@v0.10.0 ;\
-	rm -rf $$KIND_GEN_TMP_DIR ;\
-	}
-KIND=$(GOBIN)/kind
-else
-KIND=$(shell which kind)
-endif
+KUSTOMIZE = $(shell pwd)/bin/kustomize
+kustomize: ## Download kustomize locally if necessary.
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
 
-KIND_CLUSTER_NAME ?= kamwiel-cluster
+KIND = $(shell pwd)/bin/kind
+kind: ## Download kind locally if necessary.
+	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
+
+ENVTEST = $(shell pwd)/bin/setup-envtest
+envtest: ## Download envtest-setup locally if necessary.
+	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	$(ENVTEST) use 1.21
 
 ## namespace:			Creates a namespace where to deploy Kamwiel
 .PHONY: namespace
