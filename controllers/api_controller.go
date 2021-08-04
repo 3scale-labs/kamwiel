@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,9 +32,9 @@ type APIReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=networking.kuadrant.io.kuadrant.io,resources=apis,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=networking.kuadrant.io.kuadrant.io,resources=apis/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=networking.kuadrant.io.kuadrant.io,resources=apis/finalizers,verbs=update
+//+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -55,7 +56,6 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 // SetupWithManager sets up the controller with the Manager.
 func (r *APIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		// Uncomment the following line adding a pointer to an instance of the controlled resource as an argument
-		// For().
+		For(&kctlrv1beta1.API{}).
 		Complete(r)
 }
