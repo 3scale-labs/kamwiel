@@ -11,7 +11,9 @@ import (
 var Client client.Client
 
 func init() {
-	if err := kctlrv1beta1.AddToScheme(scheme.Scheme); err != nil { panic(err) }
+	if err := kctlrv1beta1.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
 
 	configuration, err := config.GetConfig()
 	if err != nil {

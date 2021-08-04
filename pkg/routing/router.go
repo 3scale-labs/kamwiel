@@ -21,7 +21,7 @@ func Start() {
 	if !ok {
 		panic("ENV PORT is not present")
 	} else {
-		fmt.Println("Kamwiel listening on port "+port)
-		router.Run(":"+port)
+		fmt.Println("Kamwiel listening on port " + port)
+		router.Run(":" + port)
 	}
 }

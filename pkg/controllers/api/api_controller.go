@@ -22,4 +22,3 @@ func Get(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, api)
 }
-
