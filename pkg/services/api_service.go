@@ -10,10 +10,12 @@ type apiServiceInterface interface {
 	GetAPI(string) (*api.API, error)
 }
 
-type apiService struct {}
+type apiService struct{}
 
 func (s *apiService) GetAPI(name string) (*api.API, error) {
 	dao := &api.API{Name: name}
-	if err := dao.Get(); err != nil { return nil, err }
+	if err := dao.Get(); err != nil {
+		return nil, err
+	}
 	return dao, nil
 }

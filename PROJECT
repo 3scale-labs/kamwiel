@@ -1,0 +1,15 @@
+domain: kuadrant.io
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: kamwiel
+repo: github.com/3scale-labs/kamwiel
+resources:
+- controller: true
+  domain: kuadrant.io
+  group: networking
+  kind: API
+  version: v1beta1
+version: "3"

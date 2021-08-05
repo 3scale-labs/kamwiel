@@ -48,10 +48,10 @@ kind: Service
 metadata:
   name: envoy
   labels:
-    app: authorino
+    app: kamwiel
 spec:
   selector:
-    app: authorino
+    app: kamwiel
     svc: envoy
   ports:
     - name: web
@@ -80,7 +80,7 @@ kind: ConfigMap
 metadata:
   name: envoy
   labels:
-    app: authorino
+    app: kamwiel
 data:
   envoy.yaml: |
     static_resources:
@@ -164,7 +164,7 @@ data:
             - endpoint:
                 address:
                   socket_address:
-                    address: kamwiel
+                    address: kamwiel-controller-manager-service
                     port_value: 3000
     admin:
       access_log_path: "/tmp/admin_access.log"
