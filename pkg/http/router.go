@@ -1,9 +1,8 @@
-package routing
+package http
 
 import (
 	"fmt"
-	"github.com/3scale-labs/kamwiel/pkg/controllers/api"
-	"github.com/3scale-labs/kamwiel/pkg/controllers/ping"
+	"github.com/3scale-labs/kamwiel/pkg/http/handlers"
 	"github.com/gin-gonic/gin"
 	"os"
 )
@@ -11,8 +10,8 @@ import (
 var router = gin.Default()
 
 func urlMappings() {
-	router.GET("/ping", ping.Ping)
-	router.GET("/apis/:name", api.Get)
+	router.GET("/ping", handlers.Ping)
+	router.GET("/apis/:name", handlers.Get)
 }
 
 func Start() {

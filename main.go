@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/3scale-labs/kamwiel/controllers"
-	"github.com/3scale-labs/kamwiel/pkg/routing"
+	"github.com/3scale-labs/kamwiel/pkg/http"
 )
 
 func main() {
-	go routing.Start()
+	go http.Start()
 	controllers.Start()
 }
