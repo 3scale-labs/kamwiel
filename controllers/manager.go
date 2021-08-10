@@ -18,26 +18,22 @@ package controllers
 
 import (
 	"flag"
-	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
-	utilRuntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientGoScheme "k8s.io/client-go/kubernetes/scheme"
+	"github.com/3scale-labs/kamwiel/pkg/datasources/kuadrant"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
 )
 
 var (
-	runtimeScheme = runtime.NewScheme()
-	setupLog      = ctrl.Log.WithName("setup")
+	setupLog       = ctrl.Log.WithName("setup")
+	kuadrantClient client.Client
 )
 
 func init() {
-	utilRuntime.Must(clientGoScheme.AddToScheme(runtimeScheme))
-	utilRuntime.Must(kctlrv1beta1.AddToScheme(runtimeScheme))
-
+	kuadrantClient = kuadrant.Client
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -59,7 +55,7 @@ func Start() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 runtimeScheme,
+		Scheme:                 kuadrant.RuntimeScheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
@@ -72,7 +68,7 @@ func Start() {
 	}
 
 	if err = (&APIReconciler{
-		Client: mgr.GetClient(),
+		Client: kuadrantClient,
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "API")
