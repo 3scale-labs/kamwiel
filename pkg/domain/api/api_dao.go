@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"github.com/3scale-labs/kamwiel/pkg/datasources/kuadrant"
+	"github.com/3scale-labs/kamwiel/pkg/clients/kuadrant"
 	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
