@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/3scale-labs/kamwiel/controllers"
+	"github.com/3scale-labs/kamwiel/pkg/controllers"
 	"github.com/3scale-labs/kamwiel/pkg/http"
 )
 
