@@ -7,13 +7,27 @@ import (
 	"net/http"
 )
 
-func Get(ctx *gin.Context) {
+type APIHandler interface {
+	Get(*gin.Context)
+}
+
+type apiHandler struct {
+	service services.APIService
+}
+
+func NewAPIHandler(service services.APIService) APIHandler {
+	return &apiHandler{
+		service: service,
+	}
+}
+
+func (h *apiHandler) Get(ctx *gin.Context) {
 	name := ctx.Param("name")
 	if len(name) == 0 {
 		ctx.JSON(http.StatusBadRequest, "Missing param `name`")
 		return
 	}
-	api, getErr := services.APIService.GetAPI(name)
+	api, getErr := h.service.GetAPI(name)
 	if getErr != nil {
 		fmt.Println("API not found", getErr)
 		ctx.JSON(http.StatusNotFound, "API not found")
