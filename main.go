@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/3scale-labs/kamwiel/pkg/controllers"
-	"github.com/3scale-labs/kamwiel/pkg/http"
+	"github.com/3scale-labs/kamwiel/pkg/interfaces/controllers"
+	"github.com/3scale-labs/kamwiel/pkg/interfaces/http"
 )
 
 func main() {

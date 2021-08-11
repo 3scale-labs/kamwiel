@@ -1,28 +1,23 @@
-package repositories
+package kuadrant
 
 import (
 	"context"
-	"github.com/3scale-labs/kamwiel/pkg/clients/kuadrant"
 	"github.com/3scale-labs/kamwiel/pkg/domain/api"
 	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type KuadrantRepository interface {
-	GetAPI(string) (*api.API, error)
-}
-
 type kuadrantRepository struct{}
 
-const namespace = "kamwiel" // get from cluster config namespace
+const namespace = "kamwiel" // TODO: get from cluster config namespace
 
 var kuadrantClient client.Client
 
 func init() {
-	kuadrantClient = kuadrant.Client
+	kuadrantClient = Client
 }
 
-func NewKuadrantRepository() KuadrantRepository {
+func NewKuadrantRepository() api.Repository {
 	return &kuadrantRepository{}
 }
 

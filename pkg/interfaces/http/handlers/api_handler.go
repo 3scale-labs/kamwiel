@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/3scale-labs/kamwiel/pkg/services"
+	"github.com/3scale-labs/kamwiel/pkg/domain/api"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,10 +12,10 @@ type APIHandler interface {
 }
 
 type apiHandler struct {
-	service services.APIService
+	service api.Service
 }
 
-func NewAPIHandler(service services.APIService) APIHandler {
+func NewAPIHandler(service api.Service) APIHandler {
 	return &apiHandler{
 		service: service,
 	}

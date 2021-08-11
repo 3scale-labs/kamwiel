@@ -18,7 +18,7 @@ package controllers
 
 import (
 	"flag"
-	"github.com/3scale-labs/kamwiel/pkg/clients/kuadrant"
+	"github.com/3scale-labs/kamwiel/pkg/adapters/kuadrant"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
