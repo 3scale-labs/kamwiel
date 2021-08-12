@@ -1,4 +1,4 @@
-package ping
+package handlers
 
 import (
 	"github.com/gin-gonic/gin"
