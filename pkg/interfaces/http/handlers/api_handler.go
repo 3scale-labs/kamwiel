@@ -10,6 +10,7 @@ import (
 
 type APIHandler interface {
 	Get(*gin.Context)
+	List(*gin.Context)
 }
 
 type apiHandler struct {
@@ -40,4 +41,18 @@ func (h *apiHandler) Get(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, apiObj)
+}
+
+func (h *apiHandler) List(ctx *gin.Context) {
+	list, getErr := h.service.ListAPI()
+	if getErr != nil && apiErrors.IsNotFound(getErr) {
+		fmt.Println("No APIs were found", getErr)
+		ctx.JSON(http.StatusNotFound, "No APIs were found")
+		return
+	} else if getErr != nil {
+		ctx.JSON(http.StatusInternalServerError, getErr)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, list)
 }

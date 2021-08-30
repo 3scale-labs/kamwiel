@@ -30,5 +30,21 @@ func (r *kuadrantRepository) GetAPI(name string) (*api.API, error) {
 		return nil, err
 	}
 
-	return &api.API{Name: name, Spec: kAPI.Spec}, nil
+	return &api.API{Name: name, Spec: *kAPI.Spec.Mappings.OAS}, nil
+}
+
+func (r *kuadrantRepository) ListAPI() (*api.APIs, error) {
+	kAPIs := &kctlrv1beta1.APIList{}
+	if err := kuadrantClient.List(context.Background(), kAPIs, &client.ListOptions{
+		Namespace: namespace,
+	}); err != nil {
+		return nil, err
+	}
+
+	apis := make(api.APIs, len(kAPIs.Items))
+	for _, kAPI := range kAPIs.Items {
+		apis = append(apis, api.API{Name: kAPI.Name, Spec: *kAPI.Spec.Mappings.OAS})
+	}
+
+	return &apis, nil
 }

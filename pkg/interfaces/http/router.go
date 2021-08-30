@@ -17,6 +17,7 @@ func urlMappings() {
 			kuadrant.NewKuadrantRepository()))
 
 	router.GET("/ping", handlers.Ping)
+	router.GET("/apis", apiHandler.List)
 	router.GET("/apis/:name", apiHandler.Get)
 }
 
