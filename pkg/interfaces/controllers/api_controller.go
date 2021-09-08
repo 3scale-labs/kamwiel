@@ -18,9 +18,15 @@ package controllers
 
 import (
 	"context"
-
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
+	apiservice "github.com/3scale-labs/kamwiel/pkg/services/api"
 	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -29,8 +35,11 @@ import (
 // APIReconciler reconciles a API object
 type APIReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	apiservice.Service
+	*runtime.Scheme
 }
+
+const apiListStatusConfigMap = "kamwiel-api-list-status"
 
 //+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis/status,verbs=get;update;patch
@@ -38,18 +47,34 @@ type APIReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the API object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.9.2/pkg/reconcile
 func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
+	apiListStatus := r.getApiListStatus(ctx, req)
 
-	// your logic here
+	apiList, listErr := r.ListAPI(ctx)
+	if listErr != nil {
+		return ctrl.Result{}, listErr
+	}
 
+	apiListMarshalled, marshallErr := json.Marshal(apiList)
+	if marshallErr != nil {
+		return ctrl.Result{}, marshallErr
+	}
+
+	newApiListHash := fmt.Sprintf("%x", md5.Sum(apiListMarshalled))
+
+	if newApiListHash != apiListStatus.Data["hash"] {
+		logger.Info("Reconcile", "New API List hash:", newApiListHash)
+		newValues := map[string]string{
+			"hash":    newApiListHash,
+			"payload": string(apiListMarshalled),
+			"fresh":   "true",
+		}
+		if patchErr := r.patchApiListStatus(ctx, apiListStatus, newValues); patchErr != nil {
+			logger.Error(patchErr, "Error patching the APIList ConfigMap")
+			return ctrl.Result{}, patchErr
+		}
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -58,4 +83,24 @@ func (r *APIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kctlrv1beta1.API{}).
 		Complete(r)
+}
+
+func (r *APIReconciler) getApiListStatus(ctx context.Context, req ctrl.Request) *v1.ConfigMap {
+	apiListStatus := &v1.ConfigMap{}
+	namespacedName := k8stypes.NamespacedName{Namespace: req.Namespace, Name: apiListStatusConfigMap}
+	if err := r.Client.Get(ctx, namespacedName, apiListStatus); err != nil && errors.IsNotFound(err) {
+		// Crete ApiListStatus ConfigMap
+	}
+	return apiListStatus
+}
+
+func (r *APIReconciler) patchApiListStatus(ctx context.Context, apiListStatus *v1.ConfigMap, newValues map[string]string) error {
+	apiListStatusPatch := client.MergeFrom(apiListStatus.DeepCopy())
+	for k, v := range newValues {
+		apiListStatus.Data[k] = v
+	}
+	if patchErr := r.Client.Patch(ctx, apiListStatus, apiListStatusPatch); patchErr != nil {
+		return patchErr
+	}
+	return nil
 }
