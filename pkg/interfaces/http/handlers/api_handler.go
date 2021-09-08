@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/3scale-labs/kamwiel/pkg/domain/api"
+	"github.com/3scale-labs/kamwiel/pkg/services/api"
 	"github.com/gin-gonic/gin"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"net/http"
@@ -29,7 +29,7 @@ func (h *apiHandler) Get(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, "Missing param `name`")
 		return
 	}
-	apiObj, getErr := h.service.GetAPI(name)
+	apiObj, getErr := h.service.GetAPI(ctx, name)
 
 	if getErr != nil && apiErrors.IsNotFound(getErr) {
 		fmt.Println("API not found", getErr)
@@ -44,7 +44,7 @@ func (h *apiHandler) Get(ctx *gin.Context) {
 }
 
 func (h *apiHandler) List(ctx *gin.Context) {
-	list, getErr := h.service.ListAPI()
+	list, getErr := h.service.ListAPI(ctx)
 	if getErr != nil && apiErrors.IsNotFound(getErr) {
 		fmt.Println("No APIs were found", getErr)
 		ctx.JSON(http.StatusNotFound, "No APIs were found")
