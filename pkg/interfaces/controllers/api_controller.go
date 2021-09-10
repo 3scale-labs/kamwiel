@@ -25,6 +25,7 @@ import (
 	kctlrv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -40,6 +41,9 @@ type APIReconciler struct {
 }
 
 const apiListStatusConfigMap = "kamwiel-api-list-status"
+const cMHash = "hash"
+const cMFresh = "fresh"
+const cMPayload = "payload"
 
 //+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=networking.kuadrant.io,resources=apis/status,verbs=get;update;patch
@@ -49,7 +53,10 @@ const apiListStatusConfigMap = "kamwiel-api-list-status"
 // move the current state of the cluster closer to the desired state.
 func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	apiListStatus := r.getApiListStatus(ctx, req)
+	apiListStatus, getErr := r.getApiListStatus(ctx, req)
+	if getErr != nil {
+		return ctrl.Result{}, getErr
+	}
 
 	apiList, listErr := r.ListAPI(ctx)
 	if listErr != nil {
@@ -66,9 +73,9 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	if newApiListHash != apiListStatus.Data["hash"] {
 		logger.Info("Reconcile", "New API List hash:", newApiListHash)
 		newValues := map[string]string{
-			"hash":    newApiListHash,
-			"payload": string(apiListMarshalled),
-			"fresh":   "true",
+			cMHash:    newApiListHash,
+			cMPayload: string(apiListMarshalled),
+			cMFresh:   "true",
 		}
 		if patchErr := r.patchApiListStatus(ctx, apiListStatus, newValues); patchErr != nil {
 			logger.Error(patchErr, "Error patching the APIList ConfigMap")
@@ -85,13 +92,15 @@ func (r *APIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *APIReconciler) getApiListStatus(ctx context.Context, req ctrl.Request) *v1.ConfigMap {
+func (r *APIReconciler) getApiListStatus(ctx context.Context, req ctrl.Request) (*v1.ConfigMap, error) {
 	apiListStatus := &v1.ConfigMap{}
 	namespacedName := k8stypes.NamespacedName{Namespace: req.Namespace, Name: apiListStatusConfigMap}
 	if err := r.Client.Get(ctx, namespacedName, apiListStatus); err != nil && errors.IsNotFound(err) {
-		// Crete ApiListStatus ConfigMap
+		if apiListStatus, err = r.createApiListStatus(ctx, namespacedName); err != nil {
+			return nil, err
+		}
 	}
-	return apiListStatus
+	return apiListStatus, nil
 }
 
 func (r *APIReconciler) patchApiListStatus(ctx context.Context, apiListStatus *v1.ConfigMap, newValues map[string]string) error {
@@ -103,4 +112,18 @@ func (r *APIReconciler) patchApiListStatus(ctx context.Context, apiListStatus *v
 		return patchErr
 	}
 	return nil
+}
+
+func (r *APIReconciler) createApiListStatus(ctx context.Context, namespacedName k8stypes.NamespacedName) (*v1.ConfigMap, error) {
+	options := metav1.ObjectMeta{Name: namespacedName.Name, Namespace: namespacedName.Namespace}
+	defaultValues := map[string]string{
+		cMHash:    "",
+		cMPayload: "",
+		cMFresh:   "true",
+	}
+	apiListStatus := &v1.ConfigMap{Data: defaultValues, ObjectMeta: options}
+	if err := r.Client.Create(ctx, apiListStatus); err != nil {
+		return nil, err
+	}
+	return apiListStatus, nil
 }
