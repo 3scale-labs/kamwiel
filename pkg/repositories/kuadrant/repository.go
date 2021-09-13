@@ -19,7 +19,7 @@ type kuadrantRepository struct {
 
 const kuadrantNamespace = "kamwiel" // TODO: get from cluster config namespace
 
-func NewKuadrantRepository(client client.Client) Repository {
+func NewRepository(client client.Client) Repository {
 	return &kuadrantRepository{
 		client,
 	}

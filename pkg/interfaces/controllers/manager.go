@@ -19,7 +19,8 @@ package controllers
 import (
 	"flag"
 	"github.com/3scale-labs/kamwiel/pkg/adapters/kuadrant"
-	"github.com/3scale-labs/kamwiel/pkg/services/api"
+	kuadrantrepo "github.com/3scale-labs/kamwiel/pkg/repositories/kuadrant"
+	apiservice "github.com/3scale-labs/kamwiel/pkg/services/api"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,14 +31,14 @@ import (
 
 var (
 	setupLog       = ctrl.Log.WithName("setup")
-	kuadrantClient client.Client
-	apiService     api.Service
+	kuadrantClient *client.Client
+	apiService     apiservice.Service
 )
 
 func init() {
-	kuadrantClient = kuadrant.Client
-	apiService = api.NewService(
-		kuadrant.NewKuadrantRepository(kuadrantClient))
+	kuadrantClient = kuadrant.GetClient()
+	apiService = apiservice.NewService(
+		kuadrantrepo.NewRepository(*kuadrantClient))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -72,7 +73,7 @@ func Start() {
 	}
 
 	if err = (&APIReconciler{
-		kuadrantClient,
+		*kuadrantClient,
 		apiService,
 		mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

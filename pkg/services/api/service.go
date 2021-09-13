@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/3scale-labs/kamwiel/pkg/adapters/kuadrant"
 	"github.com/3scale-labs/kamwiel/pkg/domain/api"
+	"github.com/3scale-labs/kamwiel/pkg/repositories/kuadrant"
 	"strings"
 )
 

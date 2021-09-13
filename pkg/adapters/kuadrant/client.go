@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	Client        client.Client
+	k8sClient     client.Client
 	RuntimeScheme = runtime.NewScheme()
 )
 
@@ -36,9 +36,13 @@ func init() {
 		}
 	}()
 
-	Client, err = cluster.DefaultNewClient(customCache, configuration, client.Options{Scheme: RuntimeScheme})
+	k8sClient, err = cluster.DefaultNewClient(customCache, configuration, client.Options{Scheme: RuntimeScheme})
 
 	if err != nil {
 		panic(fmt.Sprintf("It was impossible to setup KuadrantClient: %s", err))
 	}
+}
+
+func GetClient() *client.Client {
+	return &k8sClient
 }

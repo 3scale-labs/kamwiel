@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/3scale-labs/kamwiel/pkg/adapters/kuadrant"
 	"github.com/3scale-labs/kamwiel/pkg/interfaces/http/handlers"
-	"github.com/3scale-labs/kamwiel/pkg/services/api"
+	kuadrantrepo "github.com/3scale-labs/kamwiel/pkg/repositories/kuadrant"
+	apiservice "github.com/3scale-labs/kamwiel/pkg/services/api"
 	"github.com/gin-gonic/gin"
 	"os"
 )
@@ -13,8 +14,8 @@ var router = gin.Default()
 
 func urlMappings() {
 	apiHandler := handlers.NewAPIHandler(
-		api.NewService(
-			kuadrant.NewKuadrantRepository(kuadrant.Client)))
+		apiservice.NewService(
+			kuadrantrepo.NewRepository(*kuadrant.GetClient())))
 
 	router.GET("/ping", handlers.Ping)
 	router.GET("/apis", apiHandler.List)
