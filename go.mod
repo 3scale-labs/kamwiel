@@ -7,6 +7,7 @@ require (
 	github.com/kuadrant/kuadrant-controller v0.0.1-pre3
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
+	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.22.1
 	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.22.1
