@@ -23,26 +23,22 @@ import (
 	apiservice "github.com/3scale-labs/kamwiel/pkg/services/api"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
 )
 
 var (
-	setupLog       = ctrl.Log.WithName("setup")
-	kuadrantClient *client.Client
-	apiService     apiservice.Service
+	setupLog = ctrl.Log.WithName("setup")
 )
 
-func init() {
-	kuadrantClient = kuadrant.GetClient()
-	apiService = apiservice.NewService(
-		kuadrantrepo.NewRepository(*kuadrantClient))
-	//+kubebuilder:scaffold:scheme
-}
+//+kubebuilder:scaffold:scheme
 
 func Start() {
+	kuadrantClient := kuadrant.GetClient()
+	apiService := apiservice.NewService(
+		kuadrantrepo.NewRepository(kuadrantClient))
+
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -73,7 +69,7 @@ func Start() {
 	}
 
 	if err = (&APIReconciler{
-		*kuadrantClient,
+		kuadrantClient,
 		apiService,
 		mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

@@ -11,14 +11,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
+	"sync"
 )
 
 var (
+	clientOnce    sync.Once
 	k8sClient     client.Client
 	RuntimeScheme = runtime.NewScheme()
 )
 
-func init() {
+func newClientOrDie() client.Client {
 	utilRuntime.Must(clientGoScheme.AddToScheme(RuntimeScheme))
 	utilRuntime.Must(kctlrv1beta1.AddToScheme(RuntimeScheme))
 
@@ -41,8 +43,12 @@ func init() {
 	if err != nil {
 		panic(fmt.Sprintf("It was impossible to setup KuadrantClient: %s", err))
 	}
+	return k8sClient
 }
 
-func GetClient() *client.Client {
-	return &k8sClient
+func GetClient() client.Client {
+	clientOnce.Do(func() { // <-- atomic, does not allow repeating
+		k8sClient = newClientOrDie() // <-- thread safe
+	})
+	return k8sClient
 }

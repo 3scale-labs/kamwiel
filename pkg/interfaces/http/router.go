@@ -15,7 +15,7 @@ var router = gin.Default()
 func urlMappings() {
 	apiHandler := handlers.NewAPIHandler(
 		apiservice.NewService(
-			kuadrantrepo.NewRepository(*kuadrant.GetClient())))
+			kuadrantrepo.NewRepository(kuadrant.GetClient())))
 
 	router.GET("/ping", handlers.Ping)
 	router.GET("/apis", apiHandler.List)
