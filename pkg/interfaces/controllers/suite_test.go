@@ -1,3 +1,5 @@
+// +build integration
+
 /*
 Copyright 2021 Red Hat, Inc.
 
@@ -20,6 +22,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	configv1beta1 "github.com/kuadrant/kuadrant-controller/apis/networking/v1beta1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -61,7 +64,7 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	//+kubebuilder:scaffold:scheme
-
+	_ = configv1beta1.AddToScheme(scheme.Scheme)
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())

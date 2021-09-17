@@ -19,25 +19,26 @@ package controllers
 import (
 	"flag"
 	"github.com/3scale-labs/kamwiel/pkg/adapters/kuadrant"
+	kuadrantrepo "github.com/3scale-labs/kamwiel/pkg/repositories/kuadrant"
+	apiservice "github.com/3scale-labs/kamwiel/pkg/services/api"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
 )
 
 var (
-	setupLog       = ctrl.Log.WithName("setup")
-	kuadrantClient client.Client
+	setupLog = ctrl.Log.WithName("setup")
 )
 
-func init() {
-	kuadrantClient = kuadrant.Client
-	//+kubebuilder:scaffold:scheme
-}
+//+kubebuilder:scaffold:scheme
 
 func Start() {
+	kuadrantClient := kuadrant.GetClient()
+	apiService := apiservice.NewService(
+		kuadrantrepo.NewRepository(kuadrantClient))
+
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -68,8 +69,9 @@ func Start() {
 	}
 
 	if err = (&APIReconciler{
-		Client: kuadrantClient,
-		Scheme: mgr.GetScheme(),
+		kuadrantClient,
+		apiService,
+		mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "API")
 		os.Exit(1)

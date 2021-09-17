@@ -69,8 +69,13 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-test: manifests generate fmt vet envtest ## Run tests.
-	go test ./... -coverprofile cover.out
+test: test-unit test-integration ## Run all tests.
+
+test-unit: fmt vet  ## Run Unit tests.
+	go test ./... -coverprofile cover.out -tags unit -v -timeout 0
+
+test-integration: manifests generate fmt vet envtest  ## Run Integration tests.
+	KUBEBUILDER_ASSETS='$(strip $(shell $(ENVTEST) use -p path 1.21.2))'  go test ./... -coverprofile cover.out -tags integration -ginkgo.v -ginkgo.progress -v -timeout 0
 
 ##@ Build
 
@@ -208,7 +213,10 @@ KIND = $(shell pwd)/bin/kind
 kind: ## Download kind locally if necessary.
 	$(call go-get-tool,$(KIND),sigs.k8s.io/kind@v0.11.1)
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
 envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
-	$(ENVTEST) use 1.21
+ifeq (, $(shell which setup-envtest))
+	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+ENVTEST=$(GOBIN)/setup-envtest
+else
+ENVTEST=$(shell which setup-envtest)
+endif
