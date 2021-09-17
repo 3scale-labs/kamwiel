@@ -72,14 +72,17 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	if newApiListHash != apiListStatus.Data["hash"] {
 		logger.Info("Reconcile", "New API List hash:", newApiListHash)
-		newValues := map[string]string{
+
+		for k, v := range map[string]string{
 			cMHash:    newApiListHash,
 			cMPayload: string(apiListMarshalled),
 			cMFresh:   "true",
+		} {
+			apiListStatus.Data[k] = v
 		}
-		if patchErr := r.patchApiListStatus(ctx, apiListStatus, newValues); patchErr != nil {
-			logger.Error(patchErr, "Error patching the APIList ConfigMap")
-			return ctrl.Result{}, patchErr
+		if updateErr := r.Client.Update(ctx, apiListStatus); updateErr != nil {
+			logger.Error(updateErr, "Error updating the APIList ConfigMap")
+			return ctrl.Result{}, updateErr
 		}
 	}
 	return ctrl.Result{}, nil
@@ -101,17 +104,6 @@ func (r *APIReconciler) getApiListStatus(ctx context.Context, req ctrl.Request) 
 		}
 	}
 	return apiListStatus, nil
-}
-
-func (r *APIReconciler) patchApiListStatus(ctx context.Context, apiListStatus *v1.ConfigMap, newValues map[string]string) error {
-	apiListStatusPatch := client.MergeFrom(apiListStatus.DeepCopy())
-	for k, v := range newValues {
-		apiListStatus.Data[k] = v
-	}
-	if patchErr := r.Client.Patch(ctx, apiListStatus, apiListStatusPatch); patchErr != nil {
-		return patchErr
-	}
-	return nil
 }
 
 func (r *APIReconciler) createApiListStatus(ctx context.Context, namespacedName k8stypes.NamespacedName) (*v1.ConfigMap, error) {
