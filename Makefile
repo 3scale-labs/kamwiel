@@ -13,6 +13,7 @@ KIND_CLUSTER_NAME ?= kamwiel-cluster
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
 CLUSTER_NAMESPACE ?= kamwiel
+KIND_IMAGE ?= kindest/node:v1.19.1
 KAMWIEL_IMG ?= kamwiel:local
 KAMWIEL_PORT ?= 3000
 
@@ -157,7 +158,7 @@ create-apikey: ## Create a new api key in the cluster, API_KEY_NAME env specifie
 	}
 
 local-cluster-up: kind local-cleanup ## Start a local Kubernetes cluster using Kind
-	kind create cluster --name $(KIND_CLUSTER_NAME) --config ./utils/kind-cluster.yaml
+	kind create cluster --name $(KIND_CLUSTER_NAME) --image $(KIND_IMAGE) --config ./utils/kind-cluster.yaml
 
 local-push: kind ## Push a local container image of Kamwiel to the registry of the Kind-started local Kubernetes cluster
 	kind load docker-image $(KAMWIEL_IMG) --name $(KIND_CLUSTER_NAME)
