@@ -168,7 +168,7 @@ local-deploy: deploy ## Deploy Kamwiel and Sets the imagePullPolicy to 'IfNotPre
 	kubectl -n $(CLUSTER_NAMESPACE) patch deployment kamwiel-controller-manager -p '{"spec": {"template": {"spec":{"containers":[{"name": "manager", "imagePullPolicy":"IfNotPresent"}]}}}}'
 
 local-rollout: docker-build local-push ## Rebuild, push the docker image and redeploy Kamwiel to kind
-	kubectl -n $(CLUSTER_NAMESPACE) rollout restart deployment.apps/kamwiel
+	kubectl -n $(CLUSTER_NAMESPACE) rollout restart deployment.apps/kamwiel-controller-manager
 
 local-setup: local-cluster-up local-build-and-push namespace install deploy deploy-envoy deploy-authorino create-apikey ## Set up a test/dev local Kubernetes server loaded up with a freshly built Kamwiel image plus dependencies
 	kubectl -n $(CLUSTER_NAMESPACE) wait --timeout=500s --for=condition=Available deployments --all
