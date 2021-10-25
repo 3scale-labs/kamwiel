@@ -1,13 +1,2 @@
 resources:
-  - settings/configmaps/api_list_status.yaml
   - webhook.yaml
-
-configMapGenerator:
-  - name: github-endpoint
-    envs:
-      - .github_endpoint
-
-secretGenerator:
-  - name: github-token
-    envs:
-      - .github_token
