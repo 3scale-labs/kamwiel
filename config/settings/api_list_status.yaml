@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kamwiel-api-list-status
+data:
+  fresh: "false"
+  hash: ""
+  payload: ""

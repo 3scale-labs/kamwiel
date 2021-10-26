@@ -27,6 +27,11 @@ AUTHORINO_REPLICAS ?= 1
 API_KEY_NAME ?= kamwiel-apikey-1
 API_KEY ?= $(eval API_KEY := $(shell openssl rand -hex 32))$(API_KEY)
 
+GITHUB_ENDPOINT ?= https://api.github.com/repos/3scale-labs/kamrad/dispatches
+GITHUB_TOKEN ?= REPLACE_WITH_YOUR_GH_TOKEN
+
+FULL_STATIC ?= false
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -127,6 +132,9 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 	kubectl -n $(CLUSTER_NAMESPACE) delete -f examples/authorino-protection.yaml
 	kubectl -n $(CLUSTER_NAMESPACE) delete -f examples/kuadrant/samples/api_samples.yaml
 
+install-jobs: manifests kustomize ## Install CronJobs (i.e.: Webhook)
+	GITHUB_ENDPOINT=$(GITHUB_ENDPOINT) GITHUB_TOKEN=$(GITHUB_TOKEN) $(KUSTOMIZE) build config/jobs | kubectl -n $(CLUSTER_NAMESPACE) apply -f -
+
 cert-manager: ## Install a CertManager to the Kubernetes cluster
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
 	kubectl -n cert-manager wait --timeout=300s --for=condition=Available deployments --all
@@ -171,6 +179,9 @@ local-rollout: docker-build local-push ## Rebuild, push the docker image and red
 	kubectl -n $(CLUSTER_NAMESPACE) rollout restart deployment.apps/kamwiel-controller-manager
 
 local-setup: local-cluster-up local-build-and-push namespace install deploy deploy-envoy deploy-authorino create-apikey ## Set up a test/dev local Kubernetes server loaded up with a freshly built Kamwiel image plus dependencies
+ifeq (true, $(FULL_STATIC))
+	$(MAKE) install-jobs GITHUB_ENDPOINT=$(GITHUB_ENDPOINT) GITHUB_TOKEN=$(GITHUB_TOKEN)
+endif
 	kubectl -n $(CLUSTER_NAMESPACE) wait --timeout=500s --for=condition=Available deployments --all
 	@{ \
 	echo "Now you can export the envoy service by doing:"; \

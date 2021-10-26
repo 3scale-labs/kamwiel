@@ -1,0 +1,40 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: kamrad-webhook
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: kamrad-webhook
+              image: radial/busyboxplus:curl
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: KAMRAD_ENDPOINT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: github-endpoint
+                      key: GITHUB_ENDPOINT
+                - name: KAMRAD_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-token
+                      key: GITHUB_TOKEN
+                - name: API_LIST_STATUS_FRESH
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kamwiel-api-list-status
+                      key: fresh
+                - name: API_LIST_STATUS_HASH
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kamwiel-api-list-status
+                      key: hash
+              command:
+                - /bin/sh
+                - -c
+                - 'if [ ${API_LIST_STATUS_FRESH} = "true" ]; then curl -X POST -H "Content-Type: application/json" -H "Authorization: token $KAMRAD_TOKEN" -H "Accept: application/vnd.g     ithub.v3+json" -d "{\"event_type\": \"api-list\", \"client_payload\": {\"hash\": \"$API_LIST_STATUS_HASH\"}}" $KAMRAD_ENDPOINT -v; fi'
+          restartPolicy: OnFailure
