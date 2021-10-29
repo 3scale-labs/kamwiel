@@ -11,6 +11,8 @@ import (
 type APIHandler interface {
 	Get(*gin.Context)
 	List(*gin.Context)
+	GetListState(*gin.Context)
+	UpdateListState(*gin.Context)
 }
 
 type apiHandler struct {
@@ -55,4 +57,31 @@ func (h *apiHandler) List(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, list)
+}
+
+func (h *apiHandler) GetListState(ctx *gin.Context) {
+	apiListState, err := h.service.GetAPIListState(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, apiListState)
+}
+
+func (h *apiHandler) UpdateListState(ctx *gin.Context) {
+	hash := ctx.Param("hash")
+	if len(hash) == 0 { // this check might be a candidate to extract and reuse
+		ctx.JSON(http.StatusBadRequest, "Missing param `hash`")
+		return
+	}
+	err := h.service.UpdateAPIListState(ctx, hash)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, "API List State updated successfully")
 }

@@ -20,6 +20,8 @@ func urlMappings() {
 	router.GET("/ping", handlers.Ping)
 	router.GET("/apis", apiHandler.List)
 	router.GET("/apis/:name", apiHandler.Get)
+	router.GET("/state", apiHandler.GetListState)
+	router.PUT("/state/:hash", apiHandler.UpdateListState)
 }
 
 func Start() {
