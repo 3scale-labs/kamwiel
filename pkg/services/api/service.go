@@ -11,6 +11,8 @@ import (
 type Service interface {
 	GetAPI(context.Context, string) (*api.API, error)
 	ListAPI(context.Context) (*api.APIs, error)
+	GetAPIListState(context.Context) (string, error)
+	UpdateAPIListState(context.Context, string) error
 }
 
 type service struct {
@@ -41,4 +43,20 @@ func (s *service) ListAPI(ctx context.Context) (*api.APIs, error) {
 		return nil, err
 	}
 	return apis, nil
+}
+
+func (s *service) GetAPIListState(ctx context.Context) (string, error) {
+	apiListState, err := s.kuadrantRepo.GetAPIListState(ctx)
+	if err != nil {
+		return "", err
+	}
+	return apiListState, nil
+}
+
+func (s *service) UpdateAPIListState(ctx context.Context, hash string) error {
+	apisHash := strings.TrimSpace(hash)
+	if len(apisHash) == 0 {
+		return fmt.Errorf("invalid hash")
+	}
+	return s.kuadrantRepo.UpdateAPIListState(ctx, apisHash)
 }
