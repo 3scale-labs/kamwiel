@@ -42,3 +42,56 @@ possible to consume the cluster resources like so:
 ```bash
 curl -H 'X-API-KEY: YOUR_AUTO_GENERATED_API_KEY' http://kamwiel-authorino.127.0.0.1.nip.io:8000/ping
 ```
+
+## Features
+The feature list is quite reduce at this PoC stage, expect to change drastically.
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Feature</th>
+      <th>Description</th>
+      <th>Stage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="4">REST</td>
+      <td>GET /apis</td>
+      <td>Retrieves a list of API</td>
+      <td>Ready</td>
+    </tr>
+    <tr>
+      <td>GET /apis/:name</td>
+      <td>Retrieves a specific API by name</td>
+      <td>Ready</td>
+    </tr>
+    <tr>
+      <td>GET /state</td>
+      <td>Retrieves the API List state*</td>
+      <td>Ready</td>
+    </tr>
+    <tr>
+      <td>PUT /state/:hash</td>
+      <td>Updates the "freshness" of the API List state.</td>
+      <td>Ready</td>
+    </tr>
+    <tr>
+      <td rowspan="1">Webhooks</td>
+      <td>API List fresh</td>
+      <td>Configrable outgoing webhook that sends the API List hash when it's changed</td>
+      <td>Ready</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Integrations</td>
+      <td>Kafka</td>
+      <td>Wiring Kafka streams with a local Kafka consumer, making FE apps accessible to this events. </td>
+      <td>In Analysis</td>
+    </tr>
+    <tr>
+      <td>3rd party APIs</td>
+      <td>Connect external APIs/Services and expose its resources</td>
+      <td>In Analysis</td>
+    </tr>
+  </tbody>
+</table>
