@@ -9,7 +9,7 @@ Kamwiel makes it possible to consume [Kuadrant](https://github.com/Kuadrant) res
 and  documentation tools to employ them. Its main consumer is [Kamrad](https://github.com/3scale-labs/kamrad),
 a _Developer Portal_ builder.
 
-![Kamwiel overview](docs/images/kamwiel-overview.png?raw=true)
+![Kamwiel overview](docs/images/kamwiel-overview.svg?raw=true)
 
 ## Usage
 
