@@ -5,11 +5,11 @@ A [Kuadrant](https://github.com/Kuadrant) service that facilitates its resources
 
 ## Overview
 Kamwiel makes it possible to consume [Kuadrant](https://github.com/Kuadrant) resources, extend its features connecting
-3rd party services (external APIs, Kafka streams, etc...) digest and expose them making it possible for other services
+3rd party services, digest and expose them making it possible for other services
 and  documentation tools to employ them. Its main consumer is [Kamrad](https://github.com/3scale-labs/kamrad),
 a _Developer Portal_ builder.
 
-![Kamwiel overview](docs/images/kamwiel-overview.png?raw=true)
+![Kamwiel overview](docs/images/kamwiel-overview.svg?raw=true)
 
 ## Usage
 
@@ -83,12 +83,7 @@ The feature list is quite reduce at this PoC stage, expect to change drastically
       <td>Ready</td>
     </tr>
     <tr>
-      <td rowspan="2">Integrations</td>
-      <td>Kafka</td>
-      <td>Wiring Kafka streams with a local Kafka consumer, making FE apps accessible to this events. </td>
-      <td>In Analysis</td>
-    </tr>
-    <tr>
+      <td rowspan="1">Integrations</td>
       <td>3rd party APIs</td>
       <td>Connect external APIs/Services and expose its resources</td>
       <td>In Analysis</td>
