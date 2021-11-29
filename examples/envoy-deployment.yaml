@@ -65,6 +65,7 @@ metadata:
 spec:
   rules:
     - host: "kamwiel-authorino.127.0.0.1.nip.io"
+    - host: "*.ngrok.io"
       http:
         paths:
           - pathType: Prefix
@@ -74,6 +75,7 @@ spec:
                 name: envoy
                 port:
                   number: 8000
+
 ---
 apiVersion: v1
 kind: ConfigMap
