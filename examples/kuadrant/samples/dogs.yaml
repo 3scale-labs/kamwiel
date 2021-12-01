@@ -1,0 +1,18 @@
+apiVersion: networking.kuadrant.io/v1beta1
+kind: API
+metadata:
+  name: cats
+  namespace: kamwiel
+spec:
+  destination:
+    schema: http
+    serviceReference:
+      name: cats-api
+      namespace: kamwiel
+      port: 80
+  mappings:
+    OAS: |
+      {"openapi":"3.0.0","info":{"title":"Dogs API"},"version":"1.0.0","servers":[{"url":"http:\/\/toys\/"}],"paths":{"\/toys":{"get":{"operationId":"getToys"}}}}
+    HTTPPathMatch:
+      type: Prefix
+      value: /
